@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "137949558587",
+    "project_id": "aulafirebase-85d22",
+    "storage_bucket": "aulafirebase-85d22.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:137949558587:android:54610a430371ced899a91e",
+        "android_client_info": {
+          "package_name": "com.luanasilva.aulafirebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnuj5o8nDUQRG1RDgY5ToczRPmwR1i21A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
