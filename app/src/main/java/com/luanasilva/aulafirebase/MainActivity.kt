@@ -37,11 +37,41 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnExecutar.setOnClickListener {
 
-        salvarDados()
+            salvarDados()
+            atualizarRemoverDados()
 
-        //cadastroUsuario()
-        // logarUsuario()
+            //cadastroUsuario()
+            // logarUsuario()
         }
+    }
+
+    private fun atualizarRemoverDados() {
+        //aqui ele atualiza ana para ana cristina
+        val dados = mapOf(
+            "nome" to "ana",
+            "idade" to "25"
+        )
+
+        val referenciaAna = bancoDados
+            .collection("usuarios")
+            .document("3")
+
+        referenciaAna.update("nome", "ana cristina")
+            .addOnSuccessListener {
+            exibirMensagem("Usuário atualizado com sucesso")
+        }.addOnFailureListener { exception ->
+            exibirMensagem("Erro ao atualizar usuario")
+        }
+        /*
+
+        referenciaAna.delete()
+            .addOnSuccessListener {
+            exibirMensagem("Usuário removido com sucesso")
+        }.addOnFailureListener { exception ->
+            exibirMensagem("Erro ao remover usuario")
+        }
+         */
+
     }
 
     private fun salvarDados() {
@@ -49,7 +79,7 @@ class MainActivity : AppCompatActivity() {
         val dados = mapOf(
             "nome" to "luana",
             "idade" to "32"
-            )
+        )
 
         bancoDados.collection("usuarios")
             .document("1")
