@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.luanasilva.aulafirebase.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -18,20 +19,11 @@ class MainActivity : AppCompatActivity() {
     private val autenticacao by lazy {
         FirebaseAuth.getInstance()
     }
-
-    override fun onStart() {
-        super.onStart()
-        verificarUsuarioLogado()
-    }
-
-    private fun verificarUsuarioLogado() {
-        val usuario = autenticacao.currentUser
-        if(usuario != null) {
-            startActivity(Intent(this, PrincipalActivity::class.java))
-        } else{
-            Toast.makeText(this, "Não tem usuario logado",Toast.LENGTH_SHORT).show()
+    private val bancoDados by lazy {
+            FirebaseFirestore.getInstance()
         }
-    }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,12 +36,65 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnExecutar.setOnClickListener {
-            cadastroUsuario()
+
+        salvarDados()
+
+        //cadastroUsuario()
+        // logarUsuario()
+        }
+    }
+
+    private fun salvarDados() {
+
+        val dados = mapOf(
+            "nome" to "luana",
+            "idade" to "32"
+            )
+
+        bancoDados.collection("usuarios")
+            .document("1")
+            .set(dados)
+            .addOnSuccessListener {
+                exibirMensagem("Usuário salvo com sucesso")
+            }.addOnFailureListener { exception ->
+                exibirMensagem("Erro ao salvar usuario com sucesso")
+            }
+
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+        //verificarUsuarioLogado()
+    }
+
+    private fun verificarUsuarioLogado() {
+        //autenticacao.signOut()
+        val usuario = autenticacao.currentUser
+        if(usuario != null) {
+            startActivity(Intent(this, PrincipalActivity::class.java))
+        } else{
+            Toast.makeText(this, "Não tem usuario logado", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun logarUsuario() {
+        //Dados udigitarios pelo usuario
+        val email = "luana.silva.11@hotmail.com"
+        val senha = "123ls@lb"
+
+        //Estivesse em uma tela de login
+        autenticacao.signInWithEmailAndPassword(email,senha).addOnSuccessListener {authResult ->
+            binding.textResultado.text = "Sucesso ao logar usuario"
+            startActivity(Intent(this, PrincipalActivity::class.java))
+
+        }.addOnFailureListener { exception ->
+            binding.textResultado.text = "Falha ao logar usuario ${exception.message}"
         }
     }
 
     private fun cadastroUsuario() {
-        //Dados udigitarios pelo usuario
+        //Dados digitarios pelo usuario
         val email = "luana.silva.11@hotmail.com"
         val senha = "123ls@lb"
 
@@ -70,6 +115,11 @@ class MainActivity : AppCompatActivity() {
             val mensagemErro = exception.message
             binding.textResultado.text = "Erro:  - $mensagemErro"
         }
+
+    }
+
+    private fun exibirMensagem(texto: String) {
+        Toast.makeText(this, texto, Toast.LENGTH_LONG).show()
     }
 
 
