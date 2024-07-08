@@ -20,9 +20,8 @@ class MainActivity : AppCompatActivity() {
         FirebaseAuth.getInstance()
     }
     private val bancoDados by lazy {
-            FirebaseFirestore.getInstance()
-        }
-
+        FirebaseFirestore.getInstance()
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,21 +34,200 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        binding.btnExecutar.setOnClickListener {
+        binding.btnLogin.setOnClickListener {
 
-        salvarDados()
+            logarUsuario()
 
-        //cadastroUsuario()
-        // logarUsuario()
+            //atualizarRemoverDados()
+
+            //cadastroUsuario()
+            pesquisarDados()
+
+            //listarDados()
+            //cadastroUsuario()
+
         }
+
+        binding.btnActivityNovaConta.setOnClickListener {
+            startActivity(Intent(this, NovaContaActivity::class.java))
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        verificarUsuarioLogado()
+    }
+
+    private fun verificarUsuarioLogado() {
+        //autenticacao.signOut()
+        val usuario = autenticacao.currentUser
+        if (usuario != null) {
+            startActivity(Intent(this, PrincipalActivity::class.java))
+        } else {
+            Toast.makeText(this, "Não tem usuario logado", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun logarUsuario() {
+        //Dados udigitarios pelo usuario
+        val email = binding.editLoginEmail.toString()
+        val senha = binding.editLoginSenha.toString()
+
+        //Estivesse em uma tela de login
+        autenticacao.signInWithEmailAndPassword(email, senha).addOnSuccessListener { authResult ->
+            exibirMensagem("Sucesso ao logar usuário")
+            startActivity(Intent(this, PrincipalActivity::class.java))
+
+        }.addOnFailureListener { exception ->
+            binding.textResultado.text = "Falha ao logar usuario ${exception.message}"
+        }
+    }
+
+
+
+    //-------------------------------------------------------------------------
+
+
+
+    private fun pesquisarDados() {
+        val referenciaUsuarios = bancoDados
+            .collection("usuarios")
+            //.whereEqualTo("nome", "Luana")
+
+        referenciaUsuarios.addSnapshotListener { querySnapshot, erro ->
+
+            val listaDocuments = querySnapshot?.documents
+
+            var listaResultado = ""
+            listaDocuments?.forEach { documentSnapshot ->
+
+                val dados = documentSnapshot?.data
+                if(dados != null) {
+                    val nome = dados["nome"]
+                    val idade = dados["idade"]
+
+                    listaResultado += "NOME: $nome IDADE: $idade\n"
+
+                }
+
+            }
+            binding.textResultado.text = listaResultado
+
+        }
+    }
+
+    private fun listarDados() {
+        val idUsuarioLogado = autenticacao.currentUser?.uid
+
+        if(idUsuarioLogado != null) {
+
+            val referenciaUsuario = bancoDados
+                .collection("usuarios")
+                //Para um único usuário
+                //.document(idUsuarioLogado)
+
+            //Recuperar dados em tempo real(pois usa Listener)
+            //Lista de documentos
+            referenciaUsuario.addSnapshotListener { querySnapshot, erro ->
+
+                val listaDocuments = querySnapshot?.documents
+
+                var listaResultado = ""
+                listaDocuments?.forEach { documentSnapshot ->
+
+                    val dados = documentSnapshot?.data
+                    if(dados != null) {
+                        val nome = dados["nome"]
+                        val idade = dados["idade"]
+
+                        listaResultado += "NOME: $nome IDADE: $idade\n"
+
+                    }
+
+                }
+                binding.textResultado.text = listaResultado
+
+
+
+
+                //Um único usuário
+                /*val dados =documentSnapshot?.data
+                if(dados != null) {
+                    val nome = dados["nome"]
+                    val idade = dados["idade"]
+                    val textoResultado = "nome: $nome idade: $idade"
+
+                    binding.textResultado.text = textoResultado
+                }*/
+            }
+
+
+
+
+
+            /*referenciaUsuario
+                .get()
+                .addOnSuccessListener {documentSnapshot ->
+                    val dados =documentSnapshot.data
+                    if(dados != null) {
+                        val nome = dados["nome"]
+                        val idade = dados["idade"]
+                        val textoResultado = "nome: $nome idade: $idade"
+
+                        binding.textResultado.text = textoResultado
+                    }
+
+                }
+                .addOnFailureListener {  }*/
+        }
+
+
+    }
+
+
+
+
+
+    private fun atualizarRemoverDados() {
+        //aqui ele atualiza ana para ana cristina
+        val dados = mapOf(
+            "nome" to "ana",
+            "idade" to "25"
+        )
+
+        val idUsuarioLogado = autenticacao.currentUser?.uid
+
+        if (idUsuarioLogado != null) {
+            val referenciaUsuario = bancoDados
+                .collection("usuarios")
+                .document(idUsuarioLogado)
+
+            referenciaUsuario.update("nome", "Luana Silva")
+                .addOnSuccessListener {
+                    exibirMensagem("Usuário atualizado com sucesso")
+                }.addOnFailureListener { exception ->
+                    exibirMensagem("Erro ao atualizar usuario")
+                }
+        }
+
+        /*
+
+        referenciaAna.delete()
+            .addOnSuccessListener {
+            exibirMensagem("Usuário removido com sucesso")
+        }.addOnFailureListener { exception ->
+            exibirMensagem("Erro ao remover usuario")
+        }
+         */
+
     }
 
     private fun salvarDados() {
 
         val dados = mapOf(
-            "nome" to "luana",
-            "idade" to "32"
-            )
+            "nome" to "Lewis",
+            "idade" to "33"
+        )
 
         bancoDados.collection("usuarios")
             .document("1")
@@ -60,69 +238,11 @@ class MainActivity : AppCompatActivity() {
                 exibirMensagem("Erro ao salvar usuario com sucesso")
             }
 
-
-    }
-
-    override fun onStart() {
-        super.onStart()
-        //verificarUsuarioLogado()
-    }
-
-    private fun verificarUsuarioLogado() {
-        //autenticacao.signOut()
-        val usuario = autenticacao.currentUser
-        if(usuario != null) {
-            startActivity(Intent(this, PrincipalActivity::class.java))
-        } else{
-            Toast.makeText(this, "Não tem usuario logado", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun logarUsuario() {
-        //Dados udigitarios pelo usuario
-        val email = "luana.silva.11@hotmail.com"
-        val senha = "123ls@lb"
-
-        //Estivesse em uma tela de login
-        autenticacao.signInWithEmailAndPassword(email,senha).addOnSuccessListener {authResult ->
-            binding.textResultado.text = "Sucesso ao logar usuario"
-            startActivity(Intent(this, PrincipalActivity::class.java))
-
-        }.addOnFailureListener { exception ->
-            binding.textResultado.text = "Falha ao logar usuario ${exception.message}"
-        }
-    }
-
-    private fun cadastroUsuario() {
-        //Dados digitarios pelo usuario
-        val email = "luana.silva.11@hotmail.com"
-        val senha = "123ls@lb"
-
-        //Tela de cadastro do seu app
-
-        autenticacao.createUserWithEmailAndPassword(
-            email,
-            senha
-        ).addOnSuccessListener { authResult ->
-
-            val email = authResult.user?.email
-            val idUsuario = authResult.user?.uid
-
-
-            binding.textResultado.text = "sucesso: $idUsuario - $email"
-
-        }.addOnFailureListener { exception ->
-            val mensagemErro = exception.message
-            binding.textResultado.text = "Erro:  - $mensagemErro"
-        }
-
     }
 
     private fun exibirMensagem(texto: String) {
         Toast.makeText(this, texto, Toast.LENGTH_LONG).show()
     }
-
-
 
 
 }
