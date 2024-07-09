@@ -25,7 +25,7 @@ class NovaContaActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val COLECAO_USUARIOS = "usuarios"
+        const val COLECAO_USUARIOS = "usuarios"
     }
 
 
@@ -56,10 +56,10 @@ class NovaContaActivity : AppCompatActivity() {
 
     private fun cadastroUsuario() {
         //Dados digitarios pelo usuario
-        val nome = binding.editNovoNome.toString()
-        val email = binding.editNovoEmail.toString()
-        val idade = binding.editNovoIdade.toString()
-        val senha = binding.editNovoSenha.toString()
+        val nome = binding.editNovoNome.text.toString()
+        val email = binding.editNovoEmail.text.toString()
+        val idade = binding.editNovoIdade.text.toString()
+        val senha = binding.editNovoSenha.text.toString()
 
         try {
 

@@ -41,10 +41,10 @@ class MainActivity : AppCompatActivity() {
             //atualizarRemoverDados()
 
             //cadastroUsuario()
-            pesquisarDados()
+            //pesquisarDados()
 
-            //listarDados()
-            //cadastroUsuario()
+
+
 
         }
 
@@ -70,8 +70,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun logarUsuario() {
         //Dados udigitarios pelo usuario
-        val email = binding.editLoginEmail.toString()
-        val senha = binding.editLoginSenha.toString()
+        val email = binding.editLoginEmail.text.toString()
+        val senha = binding.editLoginSenha.text.toString()
 
         //Estivesse em uma tela de login
         autenticacao.signInWithEmailAndPassword(email, senha).addOnSuccessListener { authResult ->
@@ -86,106 +86,6 @@ class MainActivity : AppCompatActivity() {
 
 
     //-------------------------------------------------------------------------
-
-
-
-    private fun pesquisarDados() {
-        val referenciaUsuarios = bancoDados
-            .collection("usuarios")
-            //.whereEqualTo("nome", "Luana")
-
-        referenciaUsuarios.addSnapshotListener { querySnapshot, erro ->
-
-            val listaDocuments = querySnapshot?.documents
-
-            var listaResultado = ""
-            listaDocuments?.forEach { documentSnapshot ->
-
-                val dados = documentSnapshot?.data
-                if(dados != null) {
-                    val nome = dados["nome"]
-                    val idade = dados["idade"]
-
-                    listaResultado += "NOME: $nome IDADE: $idade\n"
-
-                }
-
-            }
-            binding.textResultado.text = listaResultado
-
-        }
-    }
-
-    private fun listarDados() {
-        val idUsuarioLogado = autenticacao.currentUser?.uid
-
-        if(idUsuarioLogado != null) {
-
-            val referenciaUsuario = bancoDados
-                .collection("usuarios")
-                //Para um único usuário
-                //.document(idUsuarioLogado)
-
-            //Recuperar dados em tempo real(pois usa Listener)
-            //Lista de documentos
-            referenciaUsuario.addSnapshotListener { querySnapshot, erro ->
-
-                val listaDocuments = querySnapshot?.documents
-
-                var listaResultado = ""
-                listaDocuments?.forEach { documentSnapshot ->
-
-                    val dados = documentSnapshot?.data
-                    if(dados != null) {
-                        val nome = dados["nome"]
-                        val idade = dados["idade"]
-
-                        listaResultado += "NOME: $nome IDADE: $idade\n"
-
-                    }
-
-                }
-                binding.textResultado.text = listaResultado
-
-
-
-
-                //Um único usuário
-                /*val dados =documentSnapshot?.data
-                if(dados != null) {
-                    val nome = dados["nome"]
-                    val idade = dados["idade"]
-                    val textoResultado = "nome: $nome idade: $idade"
-
-                    binding.textResultado.text = textoResultado
-                }*/
-            }
-
-
-
-
-
-            /*referenciaUsuario
-                .get()
-                .addOnSuccessListener {documentSnapshot ->
-                    val dados =documentSnapshot.data
-                    if(dados != null) {
-                        val nome = dados["nome"]
-                        val idade = dados["idade"]
-                        val textoResultado = "nome: $nome idade: $idade"
-
-                        binding.textResultado.text = textoResultado
-                    }
-
-                }
-                .addOnFailureListener {  }*/
-        }
-
-
-    }
-
-
-
 
 
     private fun atualizarRemoverDados() {
