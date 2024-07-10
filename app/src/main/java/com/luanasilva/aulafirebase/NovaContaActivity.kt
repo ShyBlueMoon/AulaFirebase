@@ -26,6 +26,7 @@ class NovaContaActivity : AppCompatActivity() {
 
     companion object {
         const val COLECAO_USUARIOS = "usuarios"
+        const val LOG_FIREBASE = "log_firebase"
     }
 
 

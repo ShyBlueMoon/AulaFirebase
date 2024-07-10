@@ -2,6 +2,7 @@ package com.luanasilva.aulafirebase
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -35,16 +36,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnLogin.setOnClickListener {
+            val email = binding.editLoginEmail.text.toString()
+            val senha = binding.editLoginSenha.text.toString()
 
-            logarUsuario()
+            try {
 
-            //atualizarRemoverDados()
+                logarUsuario(email, senha)
 
-            //cadastroUsuario()
-            //pesquisarDados()
-
-
-
+            } catch (erro: Exception) {
+                exibirMensagem("Preencha todas os campos!")
+                erro.printStackTrace()
+                Log.i("${NovaContaActivity.COLECAO_USUARIOS}", "${erro.message}")
+            }
 
         }
 
@@ -68,12 +71,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun logarUsuario() {
+    private fun logarUsuario(email: String, senha:String) {
         //Dados udigitarios pelo usuario
-        val email = binding.editLoginEmail.text.toString()
-        val senha = binding.editLoginSenha.text.toString()
 
-        //Estivesse em uma tela de login
         autenticacao.signInWithEmailAndPassword(email, senha).addOnSuccessListener { authResult ->
             exibirMensagem("Sucesso ao logar usuário")
             startActivity(Intent(this, PrincipalActivity::class.java))
@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun exibirMensagem(texto: String) {
+    fun exibirMensagem(texto: String) {
         Toast.makeText(this, texto, Toast.LENGTH_LONG).show()
     }
 

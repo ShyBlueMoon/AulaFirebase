@@ -62,5 +62,6 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx")
     //Armazenamento
     implementation("com.google.firebase:firebase-storage-ktx")
-
+    //Picasso
+    implementation ("com.squareup.picasso:picasso:2.8")
 }
