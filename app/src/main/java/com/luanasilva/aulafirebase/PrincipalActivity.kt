@@ -45,6 +45,10 @@ class PrincipalActivity : AppCompatActivity() {
         binding.btnExibirListarTodosDados.setOnClickListener{
             listarTodosDados()
         }
+
+        binding.btnActivityUploadImagem.setOnClickListener {
+            startActivity(Intent(this, UploadImagemActivity::class.java))
+        }
     }
 
     private fun exibirNomeUsuario() {
