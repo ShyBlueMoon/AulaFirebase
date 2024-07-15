@@ -1,6 +1,7 @@
 package com.luanasilva.aulafirebase
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
@@ -11,12 +12,14 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import com.luanasilva.aulafirebase.databinding.ActivityUploadImagemBinding
 import com.squareup.picasso.Picasso
+import java.io.ByteArrayOutputStream
 import java.util.UUID
 
 
@@ -70,6 +73,33 @@ class UploadImagemActivity : AppCompatActivity() {
 
     }
 
+    private val permissoes = listOf(
+        android.Manifest.permission.CAMERA,
+        android.Manifest.permission.READ_EXTERNAL_STORAGE
+    )
+
+    private var temPermissaoCamera = false
+    private var temPermissaoGaleria = false
+
+
+    /*override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        Log.i("permissao_app", "requestCode: $requestCode'")
+
+
+        permissions.forEachIndexed {indice, valor ->
+            Log.i("permissao_app", "permission: $indice) $valor'")
+        }
+        grantResults.forEachIndexed {indice, valor ->
+            Log.i("permissao_app", "concedida: $indice) $valor'")
+        }
+
+    }*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,13 +111,23 @@ class UploadImagemActivity : AppCompatActivity() {
             insets
         }
 
-        binding.btnGaleria.setOnClickListener {
+        solicitarPermissoes()
 
-            abrirGaleria.launch("image/*")//MIME Type
+        /*Permissao.requisitarPermissoes(this, permissoes,100)*/
+
+        binding.btnGaleria.setOnClickListener {
+            if (temPermissaoGaleria) {
+                abrirGaleria.launch("image/*")//MIME Type
+            } else {
+                Toast.makeText(this,"Você não tem permissão de galeria", Toast.LENGTH_LONG).show()
+            }
+
+
         }
 
         binding.btnUpload.setOnClickListener {
-            uploadGaleria()
+            //uploadGaleria()
+            uploadCamera()
         }
 
         binding.btnRecuperar.setOnClickListener {
@@ -95,9 +135,49 @@ class UploadImagemActivity : AppCompatActivity() {
         }
 
         binding.btnCamera.setOnClickListener {
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            abrirCamera.launch(intent)
+            if (temPermissaoCamera) {
+                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                abrirCamera.launch(intent)
+            } else {
+                Toast.makeText(this,"Você não tem permissão de camera", Toast.LENGTH_LONG).show()
+            }
+
         }
+    }
+
+    private fun solicitarPermissoes() {
+        //Verificar permissões que o usuário já tem
+        val permissoesNegadas = mutableListOf<String>()
+
+        temPermissaoCamera = ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+
+        temPermissaoGaleria = ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if( !temPermissaoCamera)
+            permissoesNegadas.add(android.Manifest.permission.CAMERA)
+        if( !temPermissaoGaleria)
+            permissoesNegadas.add(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+
+
+        //Solicitar permissões
+        if(permissoesNegadas.isNotEmpty()) {
+            val gerenciadorPermissoes = registerForActivityResult(
+                ActivityResultContracts.RequestMultiplePermissions()
+            ) { permissoes:Map<String, Boolean> ->
+                //camera - true
+                Log.i("novas_permissoes", "permissoes: $permissoes")
+                temPermissaoCamera= permissoes[android.Manifest.permission.CAMERA]
+                    ?:temPermissaoCamera
+
+                temPermissaoGaleria= permissoes[android.Manifest.permission.READ_EXTERNAL_STORAGE]
+                    ?:temPermissaoGaleria
+
+            }
+            gerenciadorPermissoes.launch(permissoesNegadas.toTypedArray())
+        }
+
     }
 
     private fun recuperarImagemFirebase() {
@@ -147,6 +227,43 @@ class UploadImagemActivity : AppCompatActivity() {
                     erro.printStackTrace()
                     Log.i("${NovaContaActivity.LOG_FIREBASE}", "${erro.message}")
                 }
+        }
+
+    }
+
+
+    private fun uploadCamera() {
+
+        val idUsuarioLogado = autenticacao.currentUser?.uid
+
+        val outputStream = ByteArrayOutputStream()
+        bitmapImagemSelecionada?.compress(
+            Bitmap.CompressFormat.JPEG,
+            100,
+            outputStream
+        )
+
+        if (bitmapImagemSelecionada != null && idUsuarioLogado != null) {
+            //getReference cria a pasta ,se não existir uma de mesmo nome
+            armazenamento
+                .getReference("fotos")
+                .child(idUsuarioLogado)
+                .child("foto.jpg")//nomeImagem
+                //link da imagem no celular
+                .putBytes(outputStream.toByteArray())
+                .addOnSuccessListener { task->
+                    Toast.makeText(this, "Sucesso ao fazer upload da imagem", Toast.LENGTH_LONG).show()
+                    task.metadata?.reference?.downloadUrl?.addOnSuccessListener { urlFirebase->
+                        Toast.makeText(this, urlFirebase.toString(), Toast.LENGTH_SHORT).show()
+                    }
+
+                }.addOnFailureListener{ erro->
+                    Toast.makeText(this, "Erro ao fazer upload da imagem", Toast.LENGTH_SHORT).show()
+                    erro.printStackTrace()
+                    Log.i("${NovaContaActivity.LOG_FIREBASE}", "${erro.message}")
+                }
+        } else {
+            Toast.makeText(this, "URI or id usuario is null", Toast.LENGTH_SHORT).show()
         }
 
     }
